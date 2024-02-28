@@ -9,8 +9,12 @@ import { formatCurrency } from "@/utils/helpers";
 export interface AccountType {
   id: string;
   balance: number;
+  amount?: string;
   created_at: string;
   currency: string;
+  account_number: {
+    String: string;
+  };
 }
 
 const Accounts = () => {
@@ -54,8 +58,8 @@ const Accounts = () => {
       <div className="grid grid-cols-3 gap-5 my-5">
         {accounts.map((account, index) => (
           <AccountCard
+            {...account}
             key={index}
-            currency={account.currency}
             amount={account.balance.toFixed(2).toString()}
           />
         ))}
@@ -89,17 +93,14 @@ const Accounts = () => {
   );
 };
 
-interface AccountCardType {
-  currency: string;
-  amount: string;
-}
-
-const AccountCard = (props: AccountCardType) => (
+const AccountCard = (props: AccountType) => (
   <Card className="rounded-md p-5 border-slate-300">
-    <h2 className="text-2xl font-extralight">{props.currency}</h2>
+    <h2 className="text-2xl font-extralight">{props.currency}<br/>
+      <small className="text-base font-semibold">{props.account_number.String}</small>
+    </h2>
     <div className="mt-8" aria-label="hidden" />
     <div className="text-sm">Balance</div>
-    <h1 className="font-bold text-xl">{formatCurrency(props.amount)}</h1>
+    <h1 className="font-bold text-xl">{formatCurrency(props.amount || "0")}</h1>
   </Card>
 );
 
