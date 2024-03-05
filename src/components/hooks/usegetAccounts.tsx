@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useAxios from "./useAxios";
-import { AccountType } from "@/pages/Account/Accounts";
 import { accountUrl } from "@/utils/network";
+import { AccountType } from "@/utils/types";
 
 const usegetAccounts = () => {
 

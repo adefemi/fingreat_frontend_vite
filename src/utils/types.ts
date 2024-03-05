@@ -18,3 +18,12 @@ export interface UserType {
     helpText?: string;
     items?: keyValuePair[]
   };
+
+  export interface AccountType {
+    id: string;
+    balance: number;
+    amount?: string;
+    created_at: string;
+    currency: string;
+    account_number: string;
+  }

@@ -1,21 +1,11 @@
 import useAxios from "@/components/hooks/useAxios";
-import { Card } from "@/components/ui/card";
 import useAddAccount from "@/pages/Account/hooks/useAddAccount";
 import { accountUrl } from "@/utils/network";
 import { useEffect, useState } from "react";
 import useAddMoney from "./hooks/useAddMoney";
-import { formatCurrency } from "@/utils/helpers";
-
-export interface AccountType {
-  id: string;
-  balance: number;
-  amount?: string;
-  created_at: string;
-  currency: string;
-  account_number: {
-    String: string;
-  };
-}
+import { AccountType } from "@/utils/types";
+import AccountCard from "@/components/common/accountCard";
+import useSendMoney from "@/components/hooks/useSendMoney";
 
 const Accounts = () => {
   const [state, setState] = useState({
@@ -23,7 +13,8 @@ const Accounts = () => {
     addMoneyDialog: false,
   });
   const { getAddAccount } = useAddAccount();
-  const {getAddMoney} = useAddMoney()
+  const { getAddMoney } = useAddMoney();
+  const { getSendMoney } = useSendMoney();
   const [accounts, setAccounts] = useState<AccountType[]>([]);
   const [loading, setLoading] = useState(true);
   const { axiosHandler } = useAxios();
@@ -57,11 +48,7 @@ const Accounts = () => {
     return (
       <div className="grid grid-cols-3 gap-5 my-5">
         {accounts.map((account, index) => (
-          <AccountCard
-            {...account}
-            key={index}
-            amount={account.balance.toFixed(2).toString()}
-          />
+          <AccountCard {...account} key={index} />
         ))}
       </div>
     );
@@ -80,28 +67,12 @@ const Accounts = () => {
         {accounts.length > 0 && (
           <div className="space-x-3">
             {getAddMoney(accounts, completeOperation)}
-            {/* <Button
-              className="bg-[#0941AE] hover:bg-blue-900"
-              onClick={sendMoney}
-            >
-              Send Money
-            </Button> */}
+            {getSendMoney()}
           </div>
         )}
       </div>
     </div>
   );
 };
-
-const AccountCard = (props: AccountType) => (
-  <Card className="rounded-md p-5 border-slate-300">
-    <h2 className="text-2xl font-extralight">{props.currency}<br/>
-      <small className="text-base font-semibold">{props.account_number.String}</small>
-    </h2>
-    <div className="mt-8" aria-label="hidden" />
-    <div className="text-sm">Balance</div>
-    <h1 className="font-bold text-xl">{formatCurrency(props.amount || "0")}</h1>
-  </Card>
-);
 
 export default Accounts;
