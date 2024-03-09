@@ -41,7 +41,7 @@ export const LabelCustom: React.FC<LabelCustomProps> = ({
 
 type LabelInputProps = {
   labelProps: React.ComponentPropsWithoutRef<typeof Label>;
-  inputProps: InputProps;
+  inputProps: InputProps & { ref?: React.RefObject<HTMLInputElement>};
   className?: string;
   id: string;
 };
