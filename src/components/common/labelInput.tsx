@@ -1,19 +1,18 @@
-import React, { Fragment } from "react";
-import { Label } from "../ui/label";
-import { Input, InputProps } from "../ui/input";
-import { Textarea, TextareaProps } from "../ui/textarea";
+import { cn } from "@/lib/utils";
+import { SelectItemsType } from "@/utils/types";
+import React from "react";
 import { Checkbox } from "../ui/checkbox";
+import { Input, InputProps } from "../ui/input";
+import { Label } from "../ui/label";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "../ui/select";
-import { SelectItemsType } from "@/utils/types";
-import { cn } from "@/lib/utils";
+import { Textarea, TextareaProps } from "../ui/textarea";
 
 type LabelCustomProps = {
   labelProps: React.ComponentPropsWithoutRef<typeof Label>;
