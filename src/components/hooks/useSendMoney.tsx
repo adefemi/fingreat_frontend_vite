@@ -7,12 +7,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
-import { LabelInput } from "../common/labelInput";
+import { LabelInput, LabelSelect } from "../common/labelInput";
 import { useEffect, useRef, useState } from "react";
 import useAxios from "./useAxios";
 import { accountUrl } from "@/utils/network";
-import { VerifyAccountType } from "@/utils/types";
+import { AccountType, VerifyAccountType } from "@/utils/types";
 import LoadingSpinner from "../common/loadingSpinner";
+import { formatAccountFormat, getAccountSelect } from "@/utils/helpers";
 
 const useSendMoney = () => {
   const [data, setData] = useState<{
@@ -22,6 +23,7 @@ const useSendMoney = () => {
     accountNumber: "",
     amount: "",
   });
+  const [account, setAccount] = useState<AccountType | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [verifiedAccount, setVerifiedAccount] =
     useState<VerifyAccountType | null>(null);
@@ -58,7 +60,15 @@ const useSendMoney = () => {
     trackAccountNumberChanges();
   }, [data.accountNumber]);
 
-  const getSendMoney = () => {
+  const onAccountSelect = (accounts: AccountType[], key: string) => {
+    const account = accounts.find(
+      (account) =>
+        formatAccountFormat(account.currency, account.balance) === key
+    );
+    if (account) setAccount(account);
+  };
+
+  const getSendMoney = (accounts: AccountType[], onComplete: () => void) => {
     return (
       <Dialog>
         <DialogTrigger>
@@ -70,17 +80,30 @@ const useSendMoney = () => {
             <DialogDescription>Sending money made easy</DialogDescription>
           </DialogHeader>
 
-          <form>
-            <LabelInput
-              labelProps={{ children: "Account Number" }}
-              inputProps={{
-                name: "accountNumber",
-                value: data.accountNumber,
-                onChange: handleChange,
-                ref: inputRef,
+          <form className="space-y-5">
+            <LabelSelect
+              labelProps={{ children: "From Account" }}
+              id="from_account_id"
+              selectProps={{
+                placeholder: "Select Account",
+                name: "from_account_id",
+                required: true,
+                items: getAccountSelect(accounts, true),
+                onValueChange: (value) => onAccountSelect(accounts, value),
               }}
-              id="account_number"
             />
+            {account && (
+              <LabelInput
+                labelProps={{ children: "Account Number" }}
+                inputProps={{
+                  name: "accountNumber",
+                  value: data.accountNumber,
+                  onChange: handleChange,
+                  ref: inputRef,
+                }}
+                id="account_number"
+              />
+            )}
             {loading ? (
               <LoadingSpinner className="text-blue-500 mt-2" />
             ) : (
@@ -100,7 +123,6 @@ const useSendMoney = () => {
                   placeholder: "Enter amount",
                   onChange: handleChange,
                 }}
-                className="mt-5"
                 id="amount"
               />
             )}

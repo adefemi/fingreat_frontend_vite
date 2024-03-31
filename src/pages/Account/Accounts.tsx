@@ -67,7 +67,7 @@ const Accounts = () => {
         {accounts.length > 0 && (
           <div className="space-x-3">
             {getAddMoney(accounts, completeOperation)}
-            {getSendMoney()}
+            {getSendMoney(accounts, completeOperation)}
           </div>
         )}
       </div>

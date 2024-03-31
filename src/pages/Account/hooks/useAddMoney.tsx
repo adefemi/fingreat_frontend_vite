@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { getAccountSelect } from "@/utils/helpers";
 import { accountUrl } from "@/utils/network";
+import { AccountType } from "@/utils/types";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AccountType } from "../Accounts";
 
 const useAddMoney = () => {
   const form = useRef<HTMLFormElement>(null);
@@ -66,13 +67,6 @@ const useAddMoney = () => {
       };
       getInitTransaction(amount, account.currency as Currency, tmp);
       setShowDialog(false);
-  };
-
-  const getAccountSelect = (accounts: AccountType[]) => {
-    return accounts.map((account) => ({
-      key: account.currency,
-      value: account.currency,
-    }));
   };
 
   const getAddMoney = (accounts: AccountType[], onComplete: () => void) => {
