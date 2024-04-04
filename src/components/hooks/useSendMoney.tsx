@@ -8,14 +8,19 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { LabelInput, LabelSelect } from "../common/labelInput";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useAxios from "./useAxios";
 import { accountUrl } from "@/utils/network";
 import { AccountType, VerifyAccountType } from "@/utils/types";
 import LoadingSpinner from "../common/loadingSpinner";
 import { formatAccountFormat, getAccountSelect } from "@/utils/helpers";
+import { useStore } from "../hoc/StoreProvider";
+import { toast } from "sonner";
 
 const useSendMoney = () => {
+  const {
+    state: { activeUser },
+  } = useStore();
   const [data, setData] = useState<{
     accountNumber: string;
     amount: string;
@@ -24,6 +29,7 @@ const useSendMoney = () => {
     amount: "",
   });
   const [account, setAccount] = useState<AccountType | null>(null);
+  const [modalState, setModalState] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [verifiedAccount, setVerifiedAccount] =
     useState<VerifyAccountType | null>(null);
@@ -44,6 +50,14 @@ const useSendMoney = () => {
     );
 
     if (res) {
+      if (res.user_id === activeUser?.id) {
+        return toast.error("You can't send money to yourself");
+      }
+
+      if (res.currency !== account?.currency) {
+        return toast.error("Currency mismatch");
+      }
+
       setVerifiedAccount(res);
     }
   };
@@ -54,6 +68,16 @@ const useSendMoney = () => {
       setVerifiedAccount(null);
       verifyAccountNumber();
     }
+  };
+
+  const closeModal = () => {
+    setModalState(false);
+    setData({
+      accountNumber: "",
+      amount: "",
+    });
+    setAccount(null);
+    setVerifiedAccount(null);
   };
 
   useEffect(() => {
@@ -68,19 +92,42 @@ const useSendMoney = () => {
     if (account) setAccount(account);
   };
 
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    onComplete: () => void
+  ) => {
+    e.preventDefault();
+    const payload = {
+      to_account_number: data.accountNumber,
+      amount: parseFloat(data.amount),
+      from_account_id: account?.id,
+    };
+
+    const res = await axiosHandler(accountUrl.transfer, "post", payload, true);
+
+    if (res) {
+      toast.success("Money sent successfully");
+      onComplete();
+      closeModal();
+    }
+  };
+
   const getSendMoney = (accounts: AccountType[], onComplete: () => void) => {
     return (
-      <Dialog>
-        <DialogTrigger>
+      <Dialog open={modalState}>
+        <DialogTrigger onClick={() => setModalState(true)}>
           <Button>Send Money</Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent customClose={closeModal}>
           <DialogHeader>
             <DialogTitle>Send Money</DialogTitle>
             <DialogDescription>Sending money made easy</DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-5">
+          <form
+            className="space-y-5"
+            onSubmit={(e) => handleSubmit(e, onComplete)}
+          >
             <LabelSelect
               labelProps={{ children: "From Account" }}
               id="from_account_id"
@@ -104,7 +151,7 @@ const useSendMoney = () => {
                 id="account_number"
               />
             )}
-            {loading ? (
+            {loading && !verifiedAccount ? (
               <LoadingSpinner className="text-blue-500 mt-2" />
             ) : (
               verifiedAccount && (
@@ -126,7 +173,13 @@ const useSendMoney = () => {
                 id="amount"
               />
             )}
-            <Button className="mt-7 w-full">Send</Button>
+            <Button
+              className="mt-7 w-full"
+              disabled={loading || !data.amount}
+              loading={loading}
+            >
+              Send
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

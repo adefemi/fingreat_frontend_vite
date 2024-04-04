@@ -30,4 +30,5 @@ export interface AccountType {
 
 export interface VerifyAccountType extends AccountType {
   email: string;
+  user_id: string;
 }

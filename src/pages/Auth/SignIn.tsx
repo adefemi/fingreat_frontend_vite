@@ -1,4 +1,5 @@
 import Auth from "@/components/auth/AuthForm";
+import { ActionTypes, useStore } from "@/components/hoc/StoreProvider";
 import useAxios from "@/components/hooks/useAxios";
 import { auth_token } from "@/utils/constants";
 import { authUrl } from "@/utils/network";
@@ -12,6 +13,7 @@ interface LoginType {
 
 const Login = () => {
     const [loading, SetLoading] = useState(false);
+    const {dispatch} = useStore()
     const { axiosHandler } = useAxios()
     const navigate = useNavigate()
 
@@ -32,6 +34,7 @@ const Login = () => {
 
         if (response) {
             localStorage.setItem(auth_token, response.token)
+            dispatch({type: ActionTypes.UpdateUser, payload: null})
             navigate("/");
         }
     };
