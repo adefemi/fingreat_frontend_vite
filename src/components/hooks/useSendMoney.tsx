@@ -16,6 +16,8 @@ import LoadingSpinner from "../common/loadingSpinner";
 import { formatAccountFormat, getAccountSelect } from "@/utils/helpers";
 import { useStore } from "../hoc/StoreProvider";
 import { toast } from "sonner";
+import SendMoneyConfirmation from "../common/sendMoneyConfirmation";
+import { ChevronLeft } from "lucide-react";
 
 const useSendMoney = () => {
   const {
@@ -29,6 +31,7 @@ const useSendMoney = () => {
     amount: "",
   });
   const [account, setAccount] = useState<AccountType | null>(null);
+  const [stage, setStage] = useState(0);
   const [modalState, setModalState] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [verifiedAccount, setVerifiedAccount] =
@@ -92,11 +95,12 @@ const useSendMoney = () => {
     if (account) setAccount(account);
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>,
-    onComplete: () => void
-  ) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setStage(1);
+  };
+
+  const confirmPayment = async (onComplete: () => void) => {
     const payload = {
       to_account_number: data.accountNumber,
       amount: parseFloat(data.amount),
@@ -107,6 +111,7 @@ const useSendMoney = () => {
 
     if (res) {
       toast.success("Money sent successfully");
+      setStage(0);
       onComplete();
       closeModal();
     }
@@ -120,67 +125,85 @@ const useSendMoney = () => {
         </DialogTrigger>
         <DialogContent customClose={closeModal}>
           <DialogHeader>
-            <DialogTitle>Send Money</DialogTitle>
+            <DialogTitle className="flex items-center">
+              {stage === 1 && (
+                <div className="mr-3" onClick={() => setStage(0)}>
+                  <ChevronLeft />
+                </div>
+              )}
+              {stage === 0 ? "Send Money" : "Confirm Payment"}
+            </DialogTitle>
             <DialogDescription>Sending money made easy</DialogDescription>
           </DialogHeader>
 
-          <form
-            className="space-y-5"
-            onSubmit={(e) => handleSubmit(e, onComplete)}
-          >
-            <LabelSelect
-              labelProps={{ children: "From Account" }}
-              id="from_account_id"
-              selectProps={{
-                placeholder: "Select Account",
-                name: "from_account_id",
-                required: true,
-                items: getAccountSelect(accounts, true),
-                onValueChange: (value) => onAccountSelect(accounts, value),
-              }}
-            />
-            {account && (
-              <LabelInput
-                labelProps={{ children: "Account Number" }}
-                inputProps={{
-                  name: "accountNumber",
-                  value: data.accountNumber,
-                  onChange: handleChange,
-                  ref: inputRef,
+          {stage === 0 && (
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <LabelSelect
+                labelProps={{ children: "From Account" }}
+                id="from_account_id"
+                selectProps={{
+                  placeholder: "Select Account",
+                  name: "from_account_id",
+                  required: true,
+                  value: account
+                    ? formatAccountFormat(account?.currency, account?.balance)
+                    : "",
+                  items: getAccountSelect(accounts, true),
+                  onValueChange: (value) => onAccountSelect(accounts, value),
                 }}
-                id="account_number"
               />
-            )}
-            {loading && !verifiedAccount ? (
-              <LoadingSpinner className="text-blue-500 mt-2" />
-            ) : (
-              verifiedAccount && (
-                <p className="mt-2 text-blue-500 text-sm">
-                  Account Name: {verifiedAccount.email}
-                </p>
-              )
-            )}
+              {account && (
+                <LabelInput
+                  labelProps={{ children: "Account Number" }}
+                  inputProps={{
+                    name: "accountNumber",
+                    value: data.accountNumber,
+                    onChange: handleChange,
+                    ref: inputRef,
+                  }}
+                  id="account_number"
+                />
+              )}
+              {loading && !verifiedAccount ? (
+                <LoadingSpinner className="text-blue-500 mt-2" />
+              ) : (
+                verifiedAccount && (
+                  <p className="mt-2 text-blue-500 text-sm">
+                    Account Name: {verifiedAccount.email}
+                  </p>
+                )
+              )}
 
-            {verifiedAccount && (
-              <LabelInput
-                labelProps={{ children: "Amount" }}
-                inputProps={{
-                  name: "amount",
-                  value: data.amount,
-                  placeholder: "Enter amount",
-                  onChange: handleChange,
-                }}
-                id="amount"
-              />
-            )}
-            <Button
-              className="mt-7 w-full"
-              disabled={loading || !data.amount}
-              loading={loading}
-            >
-              Send
-            </Button>
-          </form>
+              {verifiedAccount && (
+                <LabelInput
+                  labelProps={{ children: "Amount" }}
+                  inputProps={{
+                    name: "amount",
+                    value: data.amount,
+                    placeholder: "Enter amount",
+                    onChange: handleChange,
+                  }}
+                  id="amount"
+                />
+              )}
+              <Button
+                className="mt-7 w-full"
+                disabled={loading || !data.amount}
+                loading={loading}
+              >
+                Send
+              </Button>
+            </form>
+          )}
+
+          {stage === 1 && (
+            <SendMoneyConfirmation
+              toAccount={verifiedAccount as VerifyAccountType}
+              fromAccount={account as AccountType}
+              amount={data.amount}
+              onComplete={() => confirmPayment(onComplete)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     );
