@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 
 type Props = {
-  body: string[][],
+  body: any[][],
   heading: string[]
 }
 

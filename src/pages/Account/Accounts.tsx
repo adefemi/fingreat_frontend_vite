@@ -7,7 +7,11 @@ import { AccountType } from "@/utils/types";
 import AccountCard from "@/components/common/accountCard";
 import useSendMoney from "@/components/hooks/useSendMoney";
 
-const Accounts = () => {
+type props = {
+  updateDefaultAccount: (account: AccountType) => void;
+};
+
+const Accounts = ({ updateDefaultAccount }: props) => {
   const [state, setState] = useState({
     sendMoneyDialog: false,
     addMoneyDialog: false,
@@ -18,6 +22,7 @@ const Accounts = () => {
   const [accounts, setAccounts] = useState<AccountType[]>([]);
   const [loading, setLoading] = useState(true);
   const { axiosHandler } = useAxios();
+  const [defaultAccount, setDefaultAccount] = useState(0);
 
   const getAccounts = async () => {
     setLoading(true);
@@ -37,6 +42,10 @@ const Accounts = () => {
     getAccounts();
   }, []);
 
+  useEffect(() => {
+    if (accounts.length > 0) updateDefaultAccount(accounts[defaultAccount]);
+  }, [accounts, defaultAccount]);
+
   const completeOperation = () => {
     setState({ ...state, sendMoneyDialog: false, addMoneyDialog: false });
     getAccounts();
@@ -48,7 +57,12 @@ const Accounts = () => {
     return (
       <div className="grid grid-cols-3 gap-5 my-5">
         {accounts.map((account, index) => (
-          <AccountCard {...account} key={index} />
+          <AccountCard
+            {...account}
+            isDefault={index === defaultAccount}
+            onClick={() => setDefaultAccount(index)}
+            key={index}
+          />
         ))}
       </div>
     );

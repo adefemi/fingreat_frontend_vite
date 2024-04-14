@@ -32,3 +32,9 @@ export interface VerifyAccountType extends AccountType {
   email: string;
   user_id: string;
 }
+
+export interface TransactionType {
+  amount: number;
+  created_at: string;
+  id: string;
+}

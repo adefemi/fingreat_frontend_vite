@@ -15,5 +15,6 @@ export const accountUrl = {
     add: baseUrl + "/account" + "/create",
     transfer: baseUrl + "/account" + "/transfer",
     addMoney: baseUrl + "/account" + "/add-money",
-    verifyAccountNumber: baseUrl + "/account" + "/get-account-by-number"
+    verifyAccountNumber: baseUrl + "/account" + "/get-account-by-number",
+    transactions: baseUrl + "/account" + "/transactions"
 }
